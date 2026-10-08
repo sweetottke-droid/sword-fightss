@@ -5,20 +5,31 @@ const PORT=process.env.PORT||3000,MAX=40;
 const page=()=>fs.readFileSync(path.join(__dirname,'public','index.html'));
 const server=http.createServer((req,res)=>{
   if(req.url==='/api/leaderboard'){res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(Object.entries(board).map(([n,x])=>({n,ko:x.ko,wo:x.wo})).sort((a,b)=>b.ko-a.ko||a.wo-b.wo).slice(0,50)));return}
+  const A={'/burn.mp3':['audio/mpeg','burn.mp3'],'/dev.gif':['image/gif','dev.gif']}[req.url.split('?')[0]];
+  if(A){fs.readFile(path.join(__dirname,'public',A[1]),(e,b)=>{if(e){res.writeHead(404);res.end();return}res.writeHead(200,{'Content-Type':A[0],'Cache-Control':'public,max-age=86400'});res.end(b)});return}
   if(req.url==='/healthz'){res.end('ok');return}
   res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-cache'});res.end(page());
 });
 const wss=new WebSocketServer({server,maxPayload:8192});
-const players=new Map();let nextId=1,dirty=false;
+const players=new Map();let nextId=1,dirty=false;const mods={low:0,fast:0};
 const bc=o=>{const m=JSON.stringify(o);for(const p of players.values())if(p.ws.readyState===1)p.ws.send(m)};
 wss.on('connection',ws=>{
   if(players.size>=MAX){ws.close();return}
   const id='p'+(nextId++),pl={ws,presence:{},n:0,alive:true};players.set(id,pl);
-  ws.send(JSON.stringify({t:'hello',id,now:Date.now()}));bc({t:'o',n:players.size});
+  ws.send(JSON.stringify({t:'hello',id,now:Date.now()}));bc({t:'o',n:players.size});ws.send(JSON.stringify({t:'mods',m:mods}));
   ws.on('pong',()=>{pl.alive=true});
   ws.on('message',m=>{
     if(++pl.n>100)return;                      // simple flood limit (reset every second)
     let d;try{d=JSON.parse(m)}catch{return}
+    if(d&&d.t==='dev'){                                      // dev room (needs the DEV_KEY secret)
+      if(d.cmd==='auth'){const k=process.env.DEV_KEY;pl.dev=!!k&&String(d.key)===k&&String(d.n||'').trim().toLowerCase()==='sweettdev';ws.send(JSON.stringify({t:'dev',ok:pl.dev,msg:k?'':'DEV_KEY is not set on the server'}));return}
+      if(!pl.dev)return;
+      if(d.cmd==='sfx')bc({t:'sfx',on:d.on?1:0});
+      else if(d.cmd==='kill'){const m=JSON.stringify({t:'kill',by:id});for(const p of players.values())if(p!==pl&&p.ws.readyState===1)p.ws.send(m)}
+      else if(d.cmd==='mod'&&(d.k==='low'||d.k==='fast')){mods[d.k]=d.v?1:0;bc({t:'mods',m:mods})}
+      else if(d.cmd==='say'&&typeof d.m==='string'&&d.m.trim())bc({t:'say',m:d.m.replace(/[\u0000-\u001f]/g,'').trim().slice(0,100)});
+      return;
+    }
     if(d&&d.t==='stat'){                                     // save kills/deaths (highest value wins)
       const n=String(d.n||'').replace(/[\u0000-\u001f]/g,'').trim().slice(0,16);if(!n)return;
       const ko=Math.min(1e6,Math.max(0,Math.floor(+d.ko)||0)),wo=Math.min(1e6,Math.max(0,Math.floor(+d.wo)||0));

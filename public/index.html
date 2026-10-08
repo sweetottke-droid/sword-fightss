@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Sword Fights on the Heights</title>
+<html><head><meta charset="utf-8"><title>Swordfall</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
 <style>
@@ -17,9 +17,9 @@ canvas{display:block}
 .r2,.r{display:flex;padding:5px 10px}.r2{font-size:10px;opacity:.7}.r b{flex:1;font-weight:500}.r i,.r2 i{width:44px;text-align:right;font-style:normal}.r.me{background:rgba(255,255,255,.14)}.r2 span{flex:1}
 @media(max-width:640px){#pl{display:none}}
 #toast{position:fixed;left:50%;top:60px;transform:translateX(-50%);background:#d9a520;color:#111;padding:8px 16px;border-radius:6px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;z-index:5}#toast.on{opacity:1}
-#hot{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));text-align:center;font-size:11px;text-shadow:0 0 3px #000}
-#slot{margin:6px auto 0;width:62px;height:62px;border:3px solid #4fa3e8;background:#12181d;border-radius:4px;position:relative}
-#slot small{position:absolute;left:3px;top:1px}
+#hot{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));text-align:center;font-size:14px;text-shadow:0 0 3px #000}
+#slot{margin:8px auto 0;width:66px;height:66px;border:1px solid #b9c3c0;background:rgba(18,28,27,.78);border-radius:8px;position:relative}
+#slot small{position:absolute;left:7px;top:2px;font-size:15px}
 #hp{position:fixed;right:14px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:190px;font-size:12px;text-shadow:0 0 3px #000}
 #hp div.t{display:flex;justify-content:space-between}#hp div.bar{height:8px;background:#122;border-radius:2px;overflow:hidden;margin-top:2px}
 #fill{height:100%;width:100%;background:linear-gradient(#52c04a,#2f8a30);transition:width .15s}
@@ -44,20 +44,31 @@ body.play #menu{display:none}
 #menu.lb .cams{display:none}
 #board2 table{width:100%;border-collapse:collapse;margin:18px 0;background:#17121d}
 #board2 th{font:11px monospace;letter-spacing:1px;color:#a08f8f;text-align:left;padding:12px}#board2 td{padding:14px 12px;border-top:1px solid #2a2230;font-size:15px}#board2 tr.me td{background:#2a2030;color:#ffc9a0}
+#menu .cr{position:relative;display:inline-block}#menu .cr::before{content:'👑';position:absolute;left:50%;top:-.95em;font-size:.45em;line-height:1;transform:translateX(-50%) rotate(-8deg)}#hero .kick{margin-bottom:38px}
+.cred{position:fixed;right:24px;bottom:calc(24px + env(safe-area-inset-bottom,0px));text-align:right;font:13px/1.6 monospace;color:#e6dcd2;text-shadow:0 0 4px #000}
 @media(max-width:640px){#menu h1{font-size:54px}#menu h2{font-size:34px}}
+#devp{display:none;position:fixed;left:24px;top:190px;width:300px;z-index:30;background:rgba(18,12,24,.95);border:1px solid #ff9a52;border-radius:6px;padding:12px;color:#fff;font:13px Arial}
+body.devon #devp{display:block}body:not(.play) #devp{left:auto;right:24px;top:70px}
+#devp button,#devp input{display:block;width:100%;box-sizing:border-box;margin:6px 0;padding:9px;border-radius:4px;border:1px solid #5a4a4a;background:#241a2c;color:#fff;cursor:pointer;text-align:left;font:13px Arial}#devp input{cursor:text}#devp button:disabled{opacity:.4;cursor:not-allowed}
+#gif{display:none;position:fixed;right:20px;bottom:90px;width:min(340px,60vw);z-index:40;border-radius:8px;pointer-events:none;box-shadow:0 4px 20px #000a}
 </style></head><body>
-<div id="top"><span class="e">[ESC]</span>- Menu<span class="b">Send Feedback/Bug Reports</span><b style="font-size:17px;margin-left:14px">Sword Fights on the Heights IV</b><span id="feed">alimplays5193 &nbsp;⚔ Sword&nbsp; fosh</span><span class="r">Classic arena</span></div>
+<div id="top"><span class="e">[ESC]</span>- Menu<span class="b">Send Feedback/Bug Reports</span><b style="font-size:17px;margin-left:14px">Swordfall: Above the Heights</b><span id="feed">alimplays5193 &nbsp;⚔ Sword&nbsp; fosh</span><span class="r">Classic arena</span></div>
 <div id="chat">Connected to the arena. Press / to chat.<div id="msgs"></div><input id="ci" maxlength="120" placeholder="Click here or press / to chat" autocomplete="off"></div>
 <div id="pl"><h4><b>Players</b><span id="cnt">7 / 7</span></h4><div class="r2 r"><span>Name</span><i>KOs</i><i>Wipeouts</i></div><div id="rows"></div></div>
-<div id="menu"><div id="mbar"><a id="tg" class="on">Game</a><a id="tl">Leaderboards</a></div>
-<div id="hero"><div class="kick">THE ORIGINAL HEIGHTS. A NEW FRONTIER.</div><h1>SWORD FIGHTS</h1><h2>ON THE HEIGHTS <i>IV</i></h2>
+<div id="menu"><div id="mbar"><a id="tg" class="on">Game</a><a id="tl">Leaderboards</a><a id="td" style="display:none">Dev Room</a></div>
+<div id="hero"><div class="kick">ONE SWORD. ONE LONG FALL.</div><h1><span class="cr">S</span>WORDFALL</h1><h2>ABOVE THE <i>HEIGHTS</i></h2>
 <p>The classic Heights, live in your browser. Jump in with your friends. No account needed.</p>
 <input id="nm" maxlength="16" placeholder="Your name" autocomplete="off"><div class="row"><button id="play">Play now</button><span><b id="onc">0</b> Players Online</span></div>
 <button class="sec" id="lb2">View leaderboards ↗</button></div>
 <div id="lbp"><div class="kick">THE HEIGHTS KEEP SCORE</div><h1>YOUR PLACE</h1><h2>ON THE HEIGHTS.</h2><div id="board2"></div><button class="sec" id="back">← Back to the game</button></div>
+<div class="cred">Created by Sweet Ottke and Claude<br>Credits: Shedletsky 👑</div>
 <div class="cams"><button id="c0">Orbit cam</button><button id="c1">Bot POV</button></div></div>
+<div id="devp"><b>🛠 Dev Room</b> <span id="dst">Locked</span><input id="dk" type="password" placeholder="Dev key" autocomplete="off"><button id="du">Unlock</button>
+<button class="dc" data-c="sfx1">▶ Play Burn + GIF (everyone hears it)</button><button class="dc" data-c="sfx0">■ Stop sound</button><button class="dc" data-c="kill">☠ Kill everyone</button>
+<button class="dc" data-c="low">🌙 Low gravity (toggle)</button><button class="dc" data-c="fast">⚡ Super speed (toggle)</button><input id="dsay" maxlength="100" placeholder="Announcement..."><button class="dc" data-c="say">📣 Send announcement</button></div>
+<img id="gif" src="/dev.gif" alt="">
 <div id="toast"></div>
-<div id="hot">Click swing (double-click = lunge) · Space jump · WASD · Grab loot · Floor kills!<div id="slot"><small>1</small><svg viewBox="0 0 60 60" width="56" height="56"><path d="M12 48 L48 10" stroke="#ccc" stroke-width="4"/><path d="M10 40 L20 50" stroke="#e8b020" stroke-width="5"/><circle cx="9" cy="51" r="3" fill="#e8b020"/></svg></div></div>
+<div id="hot">Mouse to look · Click to swing · Quick double-click (&lt;0.2s) to lunge · WASD move · Space jump · / chat<div id="slot"><small>1</small><svg viewBox="0 0 64 64" width="60" height="60" style="position:absolute;left:3px;top:3px"><path d="M30 34 L10 54" stroke="#111" stroke-width="6" stroke-linecap="round"/><path d="M29 33 L10 52" stroke="#555" stroke-width="1.2"/><path d="M6 58 L15 55 L9 49Z" fill="#fff"/><path d="M22 22 L42 42" stroke="#d9b25a" stroke-width="3.5" stroke-linecap="round"/><path d="M33 31 L50 14" stroke="#111" stroke-width="4.5"/><path d="M38 26 L40 28M43 21 L45 23" stroke="#d9b25a" stroke-width="2"/><circle cx="53" cy="11" r="3.8" fill="#d9b25a"/></svg></div></div>
 <div id="hp"><div class="t"><span>Health</span><span id="hpT">100 / 100</span></div><div class="bar"><div id="fill"></div></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -147,7 +158,7 @@ function hasG(x,z,y){return solids.some(b=>x>b.x0&&x<b.x1&&z>b.z0&&z<b.z1&&b.y1<
 function move(c,dx,dz,safe){for(const ax of [0,1]){const nx=c.x+(ax?0:dx),nz=c.z+(ax?dz:0);let blocked=false,up=c.y;
  for(const b of solids){if(nx+R>b.x0&&nx-R<b.x1&&nz+R>b.z0&&nz-R<b.z1&&b.y1>c.y+.01&&b.y0<c.y+3){if(b.y1-c.y<=1.6)up=Math.max(up,b.y1);else blocked=true}}
  if(safe&&!blocked&&!hasG(nx,nz,c.y))blocked=true;if(!blocked){c.x=nx;c.z=nz;if(up>c.y){c.y=up;c.vy=0}}}}
-function phys0(c,dt){c.vy-=196*dt;const py=c.y;c.y+=c.vy*dt;c.ground=false;
+function phys0(c,dt){c.vy-=196*(MODS.low?.35:1)*dt;const py=c.y;c.y+=c.vy*dt;c.ground=false;
  for(const b of solids){if(c.x+R*.6>b.x0&&c.x-R*.6<b.x1&&c.z+R*.6>b.z0&&c.z-R*.6<b.z1){if(c.vy<=0&&py>=b.y1-.05&&c.y<=b.y1){c.y=b.y1;c.vy=0;c.ground=true}else if(c.vy>0&&py+3<=b.y0+.05&&c.y+3>b.y0){c.y=b.y0-3;c.vy=0}}}}
 function swing(c){if(c.sw<0&&c.cd<=0){c.sw=0;c.hit=false;c.cd=c.cdv||.7}}
 function anim(c,dt,moving,t){
@@ -173,14 +184,15 @@ const keys={};let yaw=0,pitch=.35,kills=0,t=0,locked=false;
 const ci=document.getElementById('ci');let netSend=null;
 function addMsg(n,m){const d=document.createElement('div'),b=document.createElement('b');b.textContent=n+': ';d.appendChild(b);d.appendChild(document.createTextNode(m));const L=document.getElementById('msgs');L.appendChild(d);while(L.children.length>5)L.removeChild(L.firstChild)}
 function sendChat(){const m=ci.value.trim().slice(0,120);ci.value='';ci.blur();if(!m)return;if(netSend)netSend({t:'c',m});else addMsg(me.name,m)}
-addEventListener('keydown',e=>{if(!playing)return;if(document.activeElement===ci){if(e.code==='Enter')sendChat();else if(e.code==='Escape')ci.blur();e.stopPropagation();return}if(e.code==='Slash'||e.code==='Enter'){e.preventDefault();if(document.pointerLockElement)document.exitPointerLock();ci.focus();return}keys[e.code]=true});addEventListener('keyup',e=>keys[e.code]=false);
+addEventListener('keydown',e=>{if(e.code==='F2'&&devOK){e.preventDefault();document.body.classList.toggle('devon');if(document.pointerLockElement)document.exitPointerLock();return}if(!playing)return;if(document.activeElement===ci){if(e.code==='Enter')sendChat();else if(e.code==='Escape')ci.blur();e.stopPropagation();return}if(e.code==='Slash'||e.code==='Enter'){e.preventDefault();if(document.pointerLockElement)document.exitPointerLock();ci.focus();return}keys[e.code]=true});addEventListener('keyup',e=>keys[e.code]=false);
 document.addEventListener('pointerlockchange',()=>locked=document.pointerLockElement===renderer.domElement);
 addEventListener('mousemove',e=>{if(locked){yaw-=e.movementX*.003;pitch=Math.max(-.3,Math.min(1.2,pitch+e.movementY*.003))}});
 let drag=false;let lastClick=-9;renderer.domElement.addEventListener('mousedown',e=>{if(t-lastClick<.2&&me.sw<0)me.lunge=.25;lastClick=t;if(!locked&&e.button===0){try{renderer.domElement.requestPointerLock()}catch(_){}}swing(me);if(me.sw===0){me.swc++;pushP(true)}});
 renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
 const fill=document.getElementById('fill'),hpT=document.getElementById('hpT');let bt=0;
 function mkLabel(c){const cn=document.createElement('canvas');cn.width=256;cn.height=64;const tx=new T.CanvasTexture(cn);const sp=new T.Sprite(new T.SpriteMaterial({map:tx,depthTest:false}));sp.scale.set(8,2,1);scene.add(sp);c.lab={cn,tx,sp,v:-1}}
-function upLabel(c){const l=c.lab;l.sp.position.set(c.x,c.y+7,c.z);const v=Math.ceil(c.hp);if(v===l.v)return;l.v=v;const g=l.cn.getContext('2d');g.clearRect(0,0,256,64);g.fillStyle='#111';g.font='28px serif';g.textAlign='center';g.fillText(c.name,128,30);g.fillStyle='#22ee22';g.fillRect(28,42,200*Math.max(0,c.hp)/c.max,5);l.tx.needsUpdate=true}
+function upLabel(c){const l=c.lab;l.sp.position.set(c.x,c.y+6.4,c.z);const v=Math.ceil(c.hp);const kk=v+'|'+c.name+'|'+c.max;if(kk===l.v)return;l.v=kk;const g=l.cn.getContext('2d');g.clearRect(0,0,256,64);g.fillStyle='#111';g.textAlign='center';let fs=30;g.font=fs+'px "Palatino Linotype",Georgia,serif';while(g.measureText(c.name).width>236&&fs>12){fs--;g.font=fs+'px "Palatino Linotype",Georgia,serif'}g.fillText(c.name,128,28);
+ g.fillStyle='#000';g.fillRect(14,38,228,14);g.fillStyle='#16301a';g.fillRect(16,40,224,10);g.fillStyle='#1fe01f';g.fillRect(16,40,224*Math.max(0,Math.min(1,c.hp/c.max)),10);l.tx.needsUpdate=true}
 const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 function board(){const L=[me,...bots].sort((a,b)=>b.ko-a.ko);document.getElementById('rows').innerHTML=L.map(c=>`<div class="r${c===me?' me':''}"><b>${esc(c.name)}</b><i>${c.ko}</i><i>${c.wo}</i></div>`).join('');document.getElementById('cnt').textContent=L.length+' online'}
 function feed(a,v){document.getElementById('feed').textContent=a+'  ⚔ Sword  '+v}
@@ -203,14 +215,19 @@ try{const n=localStorage.getItem('sfoth_name');if(n)me.name=n}catch(e){}
  ws.onmessage=e=>{let d;try{d=JSON.parse(e.data)}catch(_){return}
   if(d.t==='hello'){myId=d.id;off=d.now-Date.now();me.pid=myId;netSend=o=>{if(ws.readyState===1)ws.send(JSON.stringify(o))};room={presence:p=>{if(ws.readyState===1)ws.send(JSON.stringify({t:'p',p}));return Promise.resolve()}};chatTxt('Connected to the arena. ');pushP(true);syncTot()}
   else if(d.t==='o'){$('onc').textContent=d.n}
+  else if(d.t==='dev'){devOK=!!d.ok;$('dst').textContent=d.ok?'Unlocked ✔':'Locked ✖ '+(d.msg||'wrong key');document.querySelectorAll('.dc').forEach(b=>b.disabled=!d.ok)}
+  else if(d.t==='sfx'){if(d.on)startBurn();else stopBurn()}
+  else if(d.t==='kill'){if(playing&&!devOK){me.hp=0;me.by=d.by;me.last=t}}
+  else if(d.t==='mods'){MODS=d.m||MODS}
+  else if(d.t==='say'){toast('📣 '+String(d.m).slice(0,100))}
   else if(d.t==='c'){addMsg(String(d.n).slice(0,20),String(d.m).slice(0,120))}
   else if(d.t==='s'){onPeers({peers:Object.keys(d.peers).map(id=>({peer:id,isMe:id===myId,sameTab:id===myId,kind:'viewer',presence:d.peers[id]}))})}};
  ws.onclose=()=>{room=null;netSend=null;chatTxt('Disconnected, reconnecting... ');setTimeout(conn,2000)};ws.onerror=()=>{}})();
 board();
 function respawn(c){if(c===me){let q;for(let i=0;i<10;i++){q=SP[Math.floor(Math.random()*SP.length)];if(!bots.some(b=>Math.hypot(b.x-q[0],b.z-q[2])<45&&Math.abs(b.y-q[1])<40))break}c.spawn=q}c.x=c.spawn[0];c.y=c.spawn[1]+1;c.z=c.spawn[2];c.vy=0;c.hp=c.max}
-let playing=false,camMode=0;
+let playing=false,camMode=0,devOK=false,burnA=null,MODS={low:0,fast:0};
 function remoteTick(dt){for(const c of bots){const k=Math.min(1,dt*14);if(Math.hypot(c.tx-c.x,c.tz-c.z)>40){c.x=c.tx;c.y=c.ty;c.z=c.tz}c.x+=(c.tx-c.x)*k;c.y+=(c.ty-c.y)*k;c.z+=(c.tz-c.z)*k;let df=c.tf-c.face;df=Math.atan2(Math.sin(df),Math.cos(df));c.face+=df*k;c.cd-=dt;anim(c,dt,c.mv&&c.ground,t+c.x)}}
-const demo=[0x3a8a3a,0xc23a3a,0x8a4ac2].map((col,i)=>{const c=Char(col,SP[0][0]+i*2,SP[0][1],SP[0][2]);c.tg=0;return c});me.n.g.visible=false;
+const demo=[0x3a8a3a,0xc23a3a,0x8a4ac2].map((col,i)=>{const c=Char(col,SP[0][0]+i*2,SP[0][1],SP[0][2]);c.tg=0;return c});me.n.g.visible=false;mkLabel(me);me.lab.sp.visible=false;
 function menuTick(dt){remoteTick(dt);bots.forEach(upLabel);let fx=0,fy=250,fz=0;
  demo.forEach((c,i)=>{c.cd-=dt;const o=demo[(i+1)%3],dx=o.x-c.x,dz=o.z-c.z,d=Math.hypot(dx,dz)||1;if(d>3.5){move(c,dx/d*12*dt,dz/d*12*dt,true)}else if(Math.random()<dt*1.5)swing(c);c.face=Math.atan2(dx,dz);phys(c,dt);anim(c,dt,d>3.5,t+i)});
  if(camMode===0){const a=t*.12;cam.position.set(Math.cos(a)*620,380,Math.sin(a)*620);cam.lookAt(0,250,0)}
@@ -223,17 +240,25 @@ $('tl').onclick=$('lb2').onclick=()=>{menuEl.classList.add('lb');$('tl').classNa
 async function loadBoard(){const box=$('board2');box.textContent='Loading...';try{const L=await(await fetch('/api/leaderboard')).json();if(!L.length){box.textContent='No fights yet. Be the first on the board!';return}
  const tb=document.createElement('table');const h=tb.insertRow();['RANK','FIGHTER','KOS','DEATHS','K/D'].forEach(x=>{const c=document.createElement('th');c.textContent=x;h.appendChild(c)});
  L.forEach((p,i)=>{const r=tb.insertRow();['#'+(i+1),p.n,p.ko,p.wo,(p.ko/Math.max(1,p.wo)).toFixed(2)].forEach(v=>{r.insertCell().textContent=v});if(p.n===me.name)r.className='me'});box.textContent='';box.appendChild(tb)}catch(e){box.textContent='Leaderboard unavailable (open the game from your server link).'}}
-$('play').onclick=()=>{const n=nmI.value.trim().slice(0,16);if(n){me.name=n;try{localStorage.setItem('sfoth_name',n)}catch(e){}}playing=true;document.body.classList.add('play');me.n.g.visible=true;demo.forEach(c=>c.n.g.visible=false);respawn(me);me.cd=0;syncTot();pushP(true);board();try{renderer.domElement.requestPointerLock()}catch(e){}};
+$('play').onclick=()=>{const n=nmI.value.trim().slice(0,16);if(n){me.name=n;try{localStorage.setItem('sfoth_name',n)}catch(e){}}playing=true;document.body.classList.add('play');me.n.g.visible=true;me.lab.sp.visible=true;demo.forEach(c=>c.n.g.visible=false);respawn(me);me.cd=0;syncTot();pushP(true);board();try{renderer.domElement.requestPointerLock()}catch(e){}};
 const TOT=(()=>{try{return JSON.parse(localStorage.getItem('sfoth_tot')||'{}')}catch(e){return{}}})();
 const myTot=()=>TOT[me.name]||(TOT[me.name]={ko:0,wo:0});
 function syncTot(){const q=myTot();if(netSend)netSend({t:'stat',n:me.name,ko:q.ko,wo:q.wo})}
 function saveTot(){try{localStorage.setItem('sfoth_tot',JSON.stringify(TOT))}catch(e){}syncTot()}
+function startBurn(){try{if(!burnA){burnA=new Audio('/burn.mp3');burnA.onended=stopBurn}burnA.currentTime=0;burnA.play().catch(()=>{});const g=$('gif');g.src='/dev.gif?'+Date.now();g.style.display='block'}catch(e){}}
+function stopBurn(){try{if(burnA)burnA.pause()}catch(e){}$('gif').style.display='none'}
+const dev=o=>netSend&&netSend(Object.assign({t:'dev'},o));
+document.querySelectorAll('.dc').forEach(b=>{b.disabled=true;b.onclick=()=>{const c=b.dataset.c;if(c==='sfx1')dev({cmd:'sfx',on:1});else if(c==='sfx0')dev({cmd:'sfx',on:0});else if(c==='kill')dev({cmd:'kill'});else if(c==='low'||c==='fast')dev({cmd:'mod',k:c,v:MODS[c]?0:1});else if(c==='say'){dev({cmd:'say',m:$('dsay').value});$('dsay').value=''}}});
+try{$('dk').value=localStorage.getItem('sfoth_key')||''}catch(e){}
+$('du').onclick=()=>{try{localStorage.setItem('sfoth_key',$('dk').value)}catch(e){}if(netSend)netSend({t:'dev',cmd:'auth',key:$('dk').value,n:playing?me.name:nmI.value});else $('dst').textContent='Not connected'};
+function chkDev(){$('td').style.display=nmI.value.trim().toLowerCase()==='sweettdev'?'':'none'}nmI.oninput=chkDev;chkDev();
+$('td').onclick=()=>document.body.classList.toggle('devon');
 const clock=new T.Clock();
 function loop(){requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),.05);t+=dt;if(!playing){menuTick(dt);return}
  if(keys.ArrowLeft)yaw+=dt*2;if(keys.ArrowRight)yaw-=dt*2;
  let f=(keys.KeyW?1:0)-(keys.KeyS?1:0),r=(keys.KeyD?1:0)-(keys.KeyA?1:0);
  const sy=Math.sin(yaw),cy=Math.cos(yaw);let mx=f*-sy+r*cy,mz=f*-cy+r*-sy;const ml=Math.hypot(mx,mz);
- if(ml>0&&!(me.clm&&(keys.KeyW||keys.KeyS))){mx/=ml;mz/=ml;move(me,mx*16*dt,mz*16*dt);me.face=Math.atan2(mx,mz)}
+ if(ml>0&&!(me.clm&&(keys.KeyW||keys.KeyS))){mx/=ml;mz/=ml;move(me,mx*16*(MODS.fast?1.7:1)*dt,mz*16*(MODS.fast?1.7:1)*dt);me.face=Math.atan2(mx,mz)}
  if(keys.Space&&me.ground){me.vy=50}
  if(me.lunge>0){move(me,Math.sin(me.face)*32*dt,Math.cos(me.face)*32*dt);me.lunge-=dt}phys(me,dt);me.cd-=dt;
  if(me.y<1.5||me.hp<=0){die(me)}
@@ -252,7 +277,7 @@ BL.forEach((b,i)=>{const th=SN()/1000*(i%2?-2.4:2.4);qz.setFromAxisAngle(Zx,th);
  for(const c of ch){const rx=c.x-b.x,ry=c.y+2.5-b.y,al=Math.max(-15,Math.min(15,rx*ddx+ry*ddy));if(Math.hypot(rx-al*ddx,ry-al*ddy)<2.3&&Math.abs(c.z-b.z)<2.5&&t>(c.bc||0)){c.hp=0;c.last=-99;c.by=null}}})}
 const tg=new T.Vector3(me.x,me.y+3.5,me.z),D=15;
  cam.position.set(tg.x+Math.sin(yaw)*Math.cos(pitch)*D,tg.y+Math.sin(pitch)*D,tg.z+Math.cos(yaw)*Math.cos(pitch)*D);cam.lookAt(tg);
- hpT.textContent=Math.ceil(me.hp)+' / '+me.max;bots.forEach(upLabel);fill.style.width=Math.max(0,me.hp/me.max*100)+'%';
+ hpT.textContent=Math.ceil(me.hp)+' / '+me.max;bots.forEach(upLabel);upLabel(me);fill.style.width=Math.max(0,me.hp/me.max*100)+'%';
  renderer.render(scene,cam)}
 loop();
 </script></body></html>
