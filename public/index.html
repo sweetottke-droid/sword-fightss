@@ -65,7 +65,7 @@ body.devon #devp{display:block}body:not(.play) #devp{left:auto;right:24px;top:70
 <div id="lbp"><div class="kick">THE HEIGHTS KEEP SCORE</div><h1>YOUR PLACE</h1><h2>ON THE HEIGHTS.</h2><div id="board2"></div><button class="sec" id="back">← Back to the game</button></div>
 <div class="cred">Created by Sweet Ottke and Claude<br>Credits: Shedletsky 👑</div>
 <div class="cams"><button id="c0">Orbit cam</button><button id="c1">Bot POV</button></div></div>
-<div id="devp"><b>🛠 Dev Room</b> <span id="dst">Locked</span><input id="dk" type="password" placeholder="Dev key" autocomplete="off"><button id="du">Unlock</button><button id="dso">🚪 Sign out (forget this computer)</button>
+<div id="devp"><b>🛠 Dev Room</b> <span id="dst">Not signed in. Sign in on the menu (name SweettDev + password).</span><button id="dso">🚪 Sign out (forget this computer)</button>
 <button class="dc" data-c="sfx1">▶ Play Burn + GIF (everyone hears it)</button><button class="dc" data-c="sfx0">■ Stop sound</button><button class="dc" data-c="kill">☠ Kill everyone</button>
 <button class="dc" data-c="low">🌙 Low gravity (toggle)</button><button class="dc" data-c="fast">⚡ Super speed (toggle)</button><input id="dsay" maxlength="100" placeholder="Announcement..."><button class="dc" data-c="say">📣 Send announcement</button></div>
 <div id="devfab" style="display:none">🛠 Dev</div>
@@ -218,7 +218,7 @@ try{const n=localStorage.getItem('sfoth_name');if(n&&(n.trim().toLowerCase()!=='
  ws.onmessage=e=>{let d;try{d=JSON.parse(e.data)}catch(_){return}
   if(d.t==='hello'){myId=d.id;off=d.now-Date.now();me.pid=myId;netSend=o=>{if(ws.readyState===1)ws.send(JSON.stringify(o))};room={presence:p=>{if(ws.readyState===1)ws.send(JSON.stringify({t:'p',p}));return Promise.resolve()}};chatTxt('Connected to the arena. ');pushP(true);syncTot();if(isD(nmI.value||me.name)&&localStorage.getItem('sfoth_tok'))devAuth()}
   else if(d.t==='o'){$('onc').textContent=d.n}
-  else if(d.t==='dev'){devOK=!!d.ok;$('dst').textContent=d.ok?'Unlocked ✔':'Locked ✖ '+(d.msg||'wrong password');document.querySelectorAll('.dc').forEach(b=>b.disabled=!d.ok);if(d.ok&&d.tok)try{localStorage.setItem('sfoth_tok',d.tok)}catch(e){}if(!d.ok){try{localStorage.removeItem('sfoth_tok')}catch(e){}if(pend)$('perr').textContent=d.msg||'Wrong password.'}const go=d.ok&&pend;pend=false;chkDev();if(go)startPlay()}
+  else if(d.t==='dev'){devOK=!!d.ok;$('dst').textContent=d.ok?'Signed in ✔':'Not signed in ✖ '+(d.msg||'wrong password');document.querySelectorAll('.dc').forEach(b=>b.disabled=!d.ok);if(d.ok&&d.tok)try{localStorage.setItem('sfoth_tok',d.tok)}catch(e){}if(!d.ok){try{localStorage.removeItem('sfoth_tok')}catch(e){}if(pend)$('perr').textContent=d.msg||'Wrong password.'}const go=d.ok&&pend;pend=false;chkDev();if(go)startPlay()}
   else if(d.t==='sfx'){if(d.on)startBurn();else stopBurn()}
   else if(d.t==='kill'){if(playing&&!devOK){me.hp=0;me.by=d.by;me.last=t}}
   else if(d.t==='mods'){MODS=d.m||MODS}
@@ -243,7 +243,7 @@ $('tl').onclick=$('lb2').onclick=()=>{menuEl.classList.add('lb');$('tl').classNa
 async function loadBoard(){const box=$('board2');box.textContent='Loading...';try{const L=await(await fetch('/api/leaderboard')).json();if(!L.length){box.textContent='No fights yet. Be the first on the board!';return}
  const tb=document.createElement('table');const h=tb.insertRow();['RANK','FIGHTER','KOS','DEATHS','K/D'].forEach(x=>{const c=document.createElement('th');c.textContent=x;h.appendChild(c)});
  L.forEach((p,i)=>{const r=tb.insertRow();['#'+(i+1),p.n,p.ko,p.wo,(p.ko/Math.max(1,p.wo)).toFixed(2)].forEach(v=>{r.insertCell().textContent=v});if(p.n===me.name)r.className='me'});box.textContent='';box.appendChild(tb)}catch(e){box.textContent='Leaderboard unavailable (open the game from your server link).'}}
-function startPlay(){const n=nmI.value.trim().slice(0,16);if(n){me.name=isD(n)?'SweettDev':n;try{localStorage.setItem('sfoth_name',n)}catch(e){}}playing=true;document.body.classList.add('play');$('devbtn').style.display=me.name.trim().toLowerCase()==='sweettdev'?'':'none';$('devfab').style.display=$('devbtn').style.display;me.n.g.visible=true;me.lab.sp.visible=true;demo.forEach(c=>c.n.g.visible=false);respawn(me);me.cd=0;syncTot();pushP(true);board();try{renderer.domElement.requestPointerLock()}catch(e){}};
+function startPlay(){const n=nmI.value.trim().slice(0,16);if(n){me.name=isD(n)?'SweettDev':n;try{localStorage.setItem('sfoth_name',n)}catch(e){}}playing=true;document.body.classList.add('play');$('devbtn').style.display=me.name.trim().toLowerCase()==='sweettdev'?'':'none';$('devfab').style.display=$('devbtn').style.display;me.n.g.visible=true;me.lab.sp.visible=true;demo.forEach(c=>c.n.g.visible=false);respawn(me);me.cd=0;syncTot();pushP(true);board();if(!isD(me.name)){try{renderer.domElement.requestPointerLock()}catch(e){}}else document.body.classList.add('devon')}
 const TOT=(()=>{try{return JSON.parse(localStorage.getItem('sfoth_tot')||'{}')}catch(e){return{}}})();
 const myTot=()=>TOT[me.name]||(TOT[me.name]={ko:0,wo:0});
 function syncTot(){const q=myTot();if(netSend)netSend({t:'stat',n:me.name,ko:q.ko,wo:q.wo})}
@@ -258,7 +258,7 @@ function stopBurn(){try{if(burnA)burnA.pause()}catch(e){}$('gif').style.display=
 const dev=o=>netSend&&netSend(Object.assign({t:'dev'},o));
 document.querySelectorAll('.dc').forEach(b=>{b.disabled=true;b.onclick=()=>{const c=b.dataset.c;if(c==='sfx1')dev({cmd:'sfx',on:1});else if(c==='sfx0')dev({cmd:'sfx',on:0});else if(c==='kill')dev({cmd:'kill'});else if(c==='low'||c==='fast')dev({cmd:'mod',k:c,v:MODS[c]?0:1});else if(c==='say'){dev({cmd:'say',m:$('dsay').value});$('dsay').value=''}}});
 
-$('du').onclick=()=>{if(!devAuth($('dk').value))$('dst').textContent='Not connected'};
+$('pw').onkeydown=$('nm').onkeydown=e=>{if(e.key==='Enter')$('play').onclick()};
 function chkDev(){const d=isD(nmI.value);$('td').style.display=d?'':'none';$('pw').style.display=d&&!devOK?'block':'none'}nmI.oninput=chkDev;chkDev();
 $('td').onclick=()=>document.body.classList.toggle('devon');
 $('devbtn').onclick=()=>{document.body.classList.toggle('devon');if(document.pointerLockElement)document.exitPointerLock()};$('devfab').onclick=$('devbtn').onclick;
