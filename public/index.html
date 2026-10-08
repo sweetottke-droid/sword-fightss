@@ -18,6 +18,7 @@ canvas{display:block}
 @media(max-width:640px){#pl{display:none}}
 #toast{position:fixed;left:50%;top:60px;transform:translateX(-50%);background:#d9a520;color:#111;padding:8px 16px;border-radius:6px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;z-index:5}#toast.on{opacity:1}
 #feed:empty{display:none}
+.dv{background:#c9702a;color:#fff;font:700 10px Arial;padding:1px 5px;border-radius:3px;margin-right:5px;vertical-align:1px}
 #devfab{position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:35;background:#c9702a;color:#fff;font:700 15px Arial;padding:12px 16px;border-radius:24px;cursor:pointer;box-shadow:0 2px 8px #000a;user-select:none}body:not(.play) #devfab{display:none!important}
 #hot{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));text-align:center;font-size:14px;text-shadow:0 0 3px #000}
 #slot{margin:8px auto 0;width:66px;height:66px;border:1px solid #b9c3c0;background:rgba(18,28,27,.78);border-radius:8px;position:relative}
@@ -185,7 +186,7 @@ let _pl0;const OOF='data:audio/mpeg;base64,SUQzBAAAAAABAFRYWFgAAAASAAADbWFqb3JfY
 function oof(v){try{const a=new Audio(OOF);a.volume=Math.max(0,Math.min(1,v));a.play().catch(()=>{})}catch(e){}}
 const keys={};let yaw=0,pitch=.35,kills=0,t=0,locked=false;
 const ci=document.getElementById('ci');let netSend=null;
-function addMsg(n,m){const d=document.createElement('div'),b=document.createElement('b');b.textContent=n+': ';d.appendChild(b);d.appendChild(document.createTextNode(m));const L=document.getElementById('msgs');L.appendChild(d);while(L.children.length>5)L.removeChild(L.firstChild)}
+function addMsg(n,m,dv){const d=document.createElement('div'),b=document.createElement('b');b.textContent=(dv?'🛠 [DEV] ':'')+n+': ';d.appendChild(b);d.appendChild(document.createTextNode(m));const L=document.getElementById('msgs');L.appendChild(d);while(L.children.length>5)L.removeChild(L.firstChild)}
 function sendChat(){const m=ci.value.trim().slice(0,120);ci.value='';ci.blur();if(!m)return;if(netSend)netSend({t:'c',m});else addMsg(me.name,m)}
 addEventListener('keydown',e=>{if((e.code==='F2'||e.code==='Backquote'||e.code==='KeyP')&&document.activeElement.tagName!=='INPUT'&&me.name.trim().toLowerCase()==='sweettdev'){e.preventDefault();document.body.classList.toggle('devon');if(document.pointerLockElement)document.exitPointerLock();return}if(!playing)return;if(document.activeElement===ci){if(e.code==='Enter')sendChat();else if(e.code==='Escape')ci.blur();e.stopPropagation();return}if(e.code==='Slash'||e.code==='Enter'){e.preventDefault();if(document.pointerLockElement)document.exitPointerLock();ci.focus();return}keys[e.code]=true});addEventListener('keyup',e=>keys[e.code]=false);
 document.addEventListener('pointerlockchange',()=>locked=document.pointerLockElement===renderer.domElement);
@@ -194,10 +195,10 @@ let drag=false;let lastClick=-9;renderer.domElement.addEventListener('mousedown'
 renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
 const fill=document.getElementById('fill'),hpT=document.getElementById('hpT');let bt=0;
 function mkLabel(c){const cn=document.createElement('canvas');cn.width=256;cn.height=64;const tx=new T.CanvasTexture(cn);const sp=new T.Sprite(new T.SpriteMaterial({map:tx,depthTest:false}));sp.scale.set(8,2,1);scene.add(sp);c.lab={cn,tx,sp,v:-1}}
-function upLabel(c){const l=c.lab;l.sp.position.set(c.x,c.y+7,c.z);const dd=Math.min(cam.position.distanceTo(l.sp.position),60);l.sp.scale.set(dd*.26,dd*.065,1);const v=Math.ceil(c.hp);const kk=v+'|'+c.name+'|'+c.max;if(kk===l.v)return;l.v=kk;const g=l.cn.getContext('2d');g.clearRect(0,0,256,64);g.fillStyle='#111';g.textAlign='center';let fs=30;g.font=fs+'px "Palatino Linotype",Georgia,serif';while(g.measureText(c.name).width>236&&fs>12){fs--;g.font=fs+'px "Palatino Linotype",Georgia,serif'}g.fillText(c.name,128,28);
+function upLabel(c){const l=c.lab;l.sp.position.set(c.x,c.y+7,c.z);const dd=Math.min(cam.position.distanceTo(l.sp.position),60);l.sp.scale.set(dd*.26,dd*.065,1);const v=Math.ceil(c.hp);const nm=(c.dev?'🛠 ':'')+c.name,kk=v+'|'+nm+'|'+c.max;if(kk===l.v)return;l.v=kk;const g=l.cn.getContext('2d');g.clearRect(0,0,256,64);g.fillStyle=c.dev?'#a8480a':'#111';g.textAlign='center';let fs=30;g.font=fs+'px "Palatino Linotype",Georgia,serif';while(g.measureText(nm).width>236&&fs>12){fs--;g.font=fs+'px "Palatino Linotype",Georgia,serif'}g.fillText(nm,128,28);
  g.fillStyle='#000';g.fillRect(14,38,228,14);g.fillStyle='#16301a';g.fillRect(16,40,224,10);g.fillStyle='#1fe01f';g.fillRect(16,40,224*Math.max(0,Math.min(1,c.hp/c.max)),10);l.tx.needsUpdate=true}
 const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
-function board(){const L=[me,...bots].sort((a,b)=>b.ko-a.ko);document.getElementById('rows').innerHTML=L.map(c=>`<div class="r${c===me?' me':''}"><b>${esc(c.name)}</b><i>${c.ko}</i><i>${c.wo}</i></div>`).join('');document.getElementById('cnt').textContent=L.length+' online'}
+function board(){const L=[me,...bots].sort((a,b)=>b.ko-a.ko);document.getElementById('rows').innerHTML=L.map(c=>`<div class="r${c===me?' me':''}"><b>${c.dev?'<span class="dv">DEV</span>':''}${esc(c.name)}</b><i>${c.ko}</i><i>${c.wo}</i></div>`).join('');document.getElementById('cnt').textContent=L.length+' online'}
 function feed(a,v){document.getElementById('feed').textContent=a+'  ⚔ Sword  '+v}
 const remote={},seenH={};let room=null,pt=0;
 function die(c){oof(1);c.wo++;myTot().wo++;saveTot();c.streak=0;c.dn++;c.dby=(t-c.last<6&&c.by)?c.by:null;c.by=null;c.last=-99;c.sdm=1;c.kb=1;c.cdv=0;c.max=100;c.sc=0;c.n.sw.children[5].material.color.set(0x5a5c62);respawn(c);pushP(true);board()}
@@ -205,7 +206,7 @@ function pushP(force){if(!room||!playing||(!force&&t-pt<.045))return;pt=t;const 
 function onPeers(ch){const live=new Set();
  for(const p of ch.peers){if(p.sameTab){me.pid=p.peer;continue}const q=p.presence;if(p.kind!=='viewer'||!q||q.x===undefined)continue;live.add(p.peer);let c=remote[p.peer];
   if(!c){const col=SH[q.ci|0]||SH[0];c=Char(col,q.x,q.y,q.z);c.n.g.children[2].material.color.set(col);c.pid=p.peer;c.swSeen=q.swc|0;c.dnSeen=q.dn|0;c.scSeen=0;c.tx=q.x;c.ty=q.y;c.tz=q.z;c.tf=q.f||0;mkLabel(c);remote[p.peer]=c;bots.push(c)}
-  c.tx=q.x;c.ty=q.y;c.tz=q.z;c.tf=q.f||0;c.ground=!!q.g;c.mv=!!q.mv;c.hp=q.hp;c.max=q.mx||100;c.ko=q.ko|0;c.wo=q.wo|0;c.name=String(q.nm||'Player').slice(0,20)+(p.isMe?' (you, other tab)':'');
+  c.tx=q.x;c.ty=q.y;c.tz=q.z;c.tf=q.f||0;c.ground=!!q.g;c.mv=!!q.mv;c.hp=q.hp;c.max=q.mx||100;c.ko=q.ko|0;c.wo=q.wo|0;c.name=String(q.nm||'Player').slice(0,20)+(p.isMe?' (you, other tab)':'');c.dev=!!q.dv;
   if(q.sc!==c.scSeen){c.scSeen=q.sc;c.n.sw.children[5].material.color.set(q.sc||0x5a5c62)}
   if((q.swc|0)!==c.swSeen){c.swSeen=q.swc|0;c.cd=0;swing(c)}
   if((q.dn|0)!==c.dnSeen){c.dnSeen=q.dn|0;oof(1-Math.hypot(c.tx-me.x,c.tz-me.z)/200);if(q.dby&&q.dby===me.pid){me.ko++;myTot().ko++;saveTot();me.streak++;ach('First Blood',me.ko===1);ach('Five Alive',me.streak>=5);feed(me.name,c.name);pushP(true)}else if(q.dby&&remote[q.dby])feed(remote[q.dby].name,c.name)}
@@ -218,12 +219,13 @@ try{const n=localStorage.getItem('sfoth_name');if(n&&(n.trim().toLowerCase()!=='
  ws.onmessage=e=>{let d;try{d=JSON.parse(e.data)}catch(_){return}
   if(d.t==='hello'){myId=d.id;off=d.now-Date.now();me.pid=myId;netSend=o=>{if(ws.readyState===1)ws.send(JSON.stringify(o))};room={presence:p=>{if(ws.readyState===1)ws.send(JSON.stringify({t:'p',p}));return Promise.resolve()}};chatTxt('Connected to the arena. ');pushP(true);syncTot();if(isD(nmI.value||me.name)&&localStorage.getItem('sfoth_tok'))devAuth()}
   else if(d.t==='o'){$('onc').textContent=d.n}
+  else if(d.t==='dj'){toast('🛠 Developer has joined your lobby!');addMsg('System','Developer SweettDev has joined your lobby!',0)}
   else if(d.t==='dev'){devOK=!!d.ok;$('dst').textContent=d.ok?'Signed in ✔':'Not signed in ✖ '+(d.msg||'wrong password');document.querySelectorAll('.dc').forEach(b=>b.disabled=!d.ok);if(d.ok&&d.tok)try{localStorage.setItem('sfoth_tok',d.tok)}catch(e){}if(!d.ok){try{localStorage.removeItem('sfoth_tok')}catch(e){}if(pend)$('perr').textContent=d.msg||'Wrong password.'}const go=d.ok&&pend;pend=false;chkDev();if(go)startPlay()}
   else if(d.t==='sfx'){if(d.on)startBurn();else stopBurn()}
   else if(d.t==='kill'){if(playing&&!devOK){me.hp=0;me.by=d.by;me.last=t}}
   else if(d.t==='mods'){MODS=d.m||MODS}
   else if(d.t==='say'){toast('📣 '+String(d.m).slice(0,100))}
-  else if(d.t==='c'){addMsg(String(d.n).slice(0,20),String(d.m).slice(0,120))}
+  else if(d.t==='c'){addMsg(String(d.n).slice(0,20),String(d.m).slice(0,120),d.dv)}
   else if(d.t==='s'){onPeers({peers:Object.keys(d.peers).map(id=>({peer:id,isMe:id===myId,sameTab:id===myId,kind:'viewer',presence:d.peers[id]}))})}};
  ws.onclose=()=>{room=null;netSend=null;chatTxt('Disconnected, reconnecting... ');setTimeout(conn,2000)};ws.onerror=()=>{}})();
 board();
@@ -242,8 +244,8 @@ $('tg').onclick=$('back').onclick=()=>{menuEl.classList.remove('lb');$('tg').cla
 $('tl').onclick=$('lb2').onclick=()=>{menuEl.classList.add('lb');$('tl').className='on';$('tg').className='';loadBoard()};
 async function loadBoard(){const box=$('board2');box.textContent='Loading...';try{const L=await(await fetch('/api/leaderboard')).json();if(!L.length){box.textContent='No fights yet. Be the first on the board!';return}
  const tb=document.createElement('table');const h=tb.insertRow();['RANK','FIGHTER','KOS','DEATHS','K/D'].forEach(x=>{const c=document.createElement('th');c.textContent=x;h.appendChild(c)});
- L.forEach((p,i)=>{const r=tb.insertRow();['#'+(i+1),p.n,p.ko,p.wo,(p.ko/Math.max(1,p.wo)).toFixed(2)].forEach(v=>{r.insertCell().textContent=v});if(p.n===me.name)r.className='me'});box.textContent='';box.appendChild(tb)}catch(e){box.textContent='Leaderboard unavailable (open the game from your server link).'}}
-function startPlay(){const n=nmI.value.trim().slice(0,16);if(n){me.name=isD(n)?'SweettDev':n;try{localStorage.setItem('sfoth_name',n)}catch(e){}}playing=true;document.body.classList.add('play');$('devbtn').style.display=me.name.trim().toLowerCase()==='sweettdev'?'':'none';$('devfab').style.display=$('devbtn').style.display;me.n.g.visible=true;me.lab.sp.visible=true;demo.forEach(c=>c.n.g.visible=false);respawn(me);me.cd=0;syncTot();pushP(true);board();if(!isD(me.name)){try{renderer.domElement.requestPointerLock()}catch(e){}}else document.body.classList.add('devon')}
+ L.forEach((p,i)=>{const r=tb.insertRow();['#'+(i+1),(p.n.toLowerCase()==='sweettdev'?'🛠 ':'')+p.n,p.ko,p.wo,(p.ko/Math.max(1,p.wo)).toFixed(2)].forEach(v=>{r.insertCell().textContent=v});if(p.n===me.name)r.className='me'});box.textContent='';box.appendChild(tb)}catch(e){box.textContent='Leaderboard unavailable (open the game from your server link).'}}
+function startPlay(){const n=nmI.value.trim().slice(0,16);if(n){me.name=isD(n)?'SweettDev':n;try{localStorage.setItem('sfoth_name',n)}catch(e){}}playing=true;document.body.classList.add('play');$('devbtn').style.display=me.name.trim().toLowerCase()==='sweettdev'?'':'none';$('devfab').style.display=$('devbtn').style.display;me.n.g.visible=true;me.dev=devOK&&isD(me.name);me.lab.sp.visible=true;demo.forEach(c=>c.n.g.visible=false);respawn(me);me.cd=0;syncTot();pushP(true);board();if(!isD(me.name)){try{renderer.domElement.requestPointerLock()}catch(e){}}else document.body.classList.add('devon')}
 const TOT=(()=>{try{return JSON.parse(localStorage.getItem('sfoth_tot')||'{}')}catch(e){return{}}})();
 const myTot=()=>TOT[me.name]||(TOT[me.name]={ko:0,wo:0});
 function syncTot(){const q=myTot();if(netSend)netSend({t:'stat',n:me.name,ko:q.ko,wo:q.wo})}

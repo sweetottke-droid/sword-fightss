@@ -51,10 +51,10 @@ wss.on('connection',ws=>{
     if(d&&d.t==='c'&&typeof d.m==='string'){                // chat
       const now=Date.now();if(now-(pl.lastC||0)<400)return;pl.lastC=now;
       const m=d.m.replace(/[\u0000-\u001f]/g,'').trim().slice(0,120);if(!m)return;
-      const out=JSON.stringify({t:'c',n:String(pl.presence.nm||'Player').slice(0,20),m});
+      const out=JSON.stringify({t:'c',n:String(pl.presence.nm||'Player').slice(0,20),m,dv:pl.dev?1:0});
       for(const p of players.values())if(p.ws.readyState===1)p.ws.send(out);return;
     }
-    if(d&&d.t==='p'&&d.p&&typeof d.p==='object'&&!Array.isArray(d.p)){if(typeof d.p.nm==='string'&&d.p.nm.trim().toLowerCase()==='sweettdev'&&!pl.dev)d.p.nm='Impostor';Object.assign(pl.presence,d.p);dirty=true}
+    if(d&&d.t==='p'&&d.p&&typeof d.p==='object'&&!Array.isArray(d.p)){if(typeof d.p.nm==='string'&&d.p.nm.trim().toLowerCase()==='sweettdev'&&!pl.dev)d.p.nm='Impostor';d.p.dv=pl.dev?1:0;if(pl.dev&&!pl.joined){pl.joined=true;const j=JSON.stringify({t:'dj'});for(const p of players.values())if(p!==pl&&p.ws.readyState===1)p.ws.send(j)}Object.assign(pl.presence,d.p);dirty=true}
   });
   ws.on('close',()=>{players.delete(id);dirty=true;bc({t:'o',n:players.size})});
   ws.on('error',()=>{});
