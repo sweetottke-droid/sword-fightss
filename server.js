@@ -1,6 +1,8 @@
-const http=require('http'),fs=require('fs'),path=require('path'),{WebSocketServer}=require('ws');
+const crypto=require('crypto'),http=require('http'),fs=require('fs'),path=require('path'),{WebSocketServer}=require('ws');
 const FILE=path.join(__dirname,'leaderboard.json');let board={};try{board=JSON.parse(fs.readFileSync(FILE,'utf8'))}catch{}
 let saveT=null;const save=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{try{fs.writeFileSync(FILE,JSON.stringify(board))}catch{}},2000)};
+const tokOf=()=>crypto.createHmac('sha256',process.env.DEV_KEY||'').update('sweettdev-session-v1').digest('hex');
+const same=(a,b)=>{const x=Buffer.from(String(a)),y=Buffer.from(String(b));return x.length===y.length&&crypto.timingSafeEqual(x,y)};
 const PORT=process.env.PORT||3000,MAX=40;
 const page=()=>fs.readFileSync(path.join(__dirname,'public','index.html'));
 const server=http.createServer((req,res)=>{
@@ -15,14 +17,17 @@ const players=new Map();let nextId=1,dirty=false;const mods={low:0,fast:0};
 const bc=o=>{const m=JSON.stringify(o);for(const p of players.values())if(p.ws.readyState===1)p.ws.send(m)};
 wss.on('connection',ws=>{
   if(players.size>=MAX){ws.close();return}
-  const id='p'+(nextId++),pl={ws,presence:{},n:0,alive:true};players.set(id,pl);
+  const id='p'+(nextId++),pl={ws,presence:{},n:0,alive:true,bad:0,dev:false};players.set(id,pl);
   ws.send(JSON.stringify({t:'hello',id,now:Date.now()}));bc({t:'o',n:players.size});ws.send(JSON.stringify({t:'mods',m:mods}));
   ws.on('pong',()=>{pl.alive=true});
   ws.on('message',m=>{
     if(++pl.n>100)return;                      // simple flood limit (reset every second)
     let d;try{d=JSON.parse(m)}catch{return}
     if(d&&d.t==='dev'){                                      // dev room (needs the DEV_KEY secret)
-      if(d.cmd==='auth'){const k=process.env.DEV_KEY;pl.dev=!!k&&String(d.key)===k&&String(d.n||'').trim().toLowerCase()==='sweettdev';ws.send(JSON.stringify({t:'dev',ok:pl.dev,msg:k?'':'DEV_KEY is not set on the server'}));return}
+      if(d.cmd==='auth'){const k=process.env.DEV_KEY;
+        pl.dev=!!k&&String(d.n||'').trim().toLowerCase()==='sweettdev'&&((!!d.key&&same(d.key,k))||(!!d.tok&&same(d.tok,tokOf())));
+        if(!pl.dev&&++pl.bad>5){ws.close();return}
+        ws.send(JSON.stringify({t:'dev',ok:pl.dev,tok:pl.dev?tokOf():undefined,msg:k?'':'DEV_KEY is not set on the server'}));return}
       if(!pl.dev)return;
       if(d.cmd==='sfx')bc({t:'sfx',on:d.on?1:0});
       else if(d.cmd==='kill'){const m=JSON.stringify({t:'kill',by:id});for(const p of players.values())if(p!==pl&&p.ws.readyState===1)p.ws.send(m)}
@@ -31,7 +36,7 @@ wss.on('connection',ws=>{
       return;
     }
     if(d&&d.t==='stat'){                                     // save kills/deaths (highest value wins)
-      const n=String(d.n||'').replace(/[\u0000-\u001f]/g,'').trim().slice(0,16);if(!n)return;
+      const n=String(d.n||'').replace(/[\u0000-\u001f]/g,'').trim().slice(0,16);if(!n||(n.toLowerCase()==='sweettdev'&&!pl.dev))return;
       const ko=Math.min(1e6,Math.max(0,Math.floor(+d.ko)||0)),wo=Math.min(1e6,Math.max(0,Math.floor(+d.wo)||0));
       const b=board[n]||(board[n]={ko:0,wo:0});b.ko=Math.max(b.ko,ko);b.wo=Math.max(b.wo,wo);save();return;
     }
@@ -41,7 +46,7 @@ wss.on('connection',ws=>{
       const out=JSON.stringify({t:'c',n:String(pl.presence.nm||'Player').slice(0,20),m});
       for(const p of players.values())if(p.ws.readyState===1)p.ws.send(out);return;
     }
-    if(d&&d.t==='p'&&d.p&&typeof d.p==='object'&&!Array.isArray(d.p)){Object.assign(pl.presence,d.p);dirty=true}
+    if(d&&d.t==='p'&&d.p&&typeof d.p==='object'&&!Array.isArray(d.p)){if(typeof d.p.nm==='string'&&d.p.nm.trim().toLowerCase()==='sweettdev'&&!pl.dev)d.p.nm='Impostor';Object.assign(pl.presence,d.p);dirty=true}
   });
   ws.on('close',()=>{players.delete(id);dirty=true;bc({t:'o',n:players.size})});
   ws.on('error',()=>{});
