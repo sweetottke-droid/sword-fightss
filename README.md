@@ -10,9 +10,9 @@ Files: server.js, package.json, render.yaml, public/index.html, public/burn.mp3,
 4. Deploy. Send the https://....onrender.com link to your friends.
 
 ## SweettDev login
-The name SweettDev is password protected. In Render: your service > Environment > add `DEV_KEY` = the SweettDev password (never put it in a file). Save and let it restart.
-On the start menu type SweettDev, enter the password, press Play. The browser remembers you (a token, not the password), so next time on the same computer you are signed in already.
-Use the Dev Room panel's "Sign out" button on shared computers. Everyone else starts with a random name.
+The name SweettDev is password protected and already set up (no environment variable needed): type SweettDev on the start menu, enter your password and press Play.
+Only a one-way fingerprint of the password is in server.js, so nobody can read it from GitHub.
+The browser remembers you, so next time on the same computer you are signed in already. Use the Dev Room panel's "Sign out" button on shared computers.
 
 ## Notes
 - Free plan sleeps after ~15 min idle; first visit afterwards takes about a minute.

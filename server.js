@@ -1,7 +1,11 @@
 const crypto=require('crypto'),http=require('http'),fs=require('fs'),path=require('path'),{WebSocketServer}=require('ws');
 const FILE=path.join(__dirname,'leaderboard.json');let board={};try{board=JSON.parse(fs.readFileSync(FILE,'utf8'))}catch{}
 let saveT=null;const save=()=>{clearTimeout(saveT);saveT=setTimeout(()=>{try{fs.writeFileSync(FILE,JSON.stringify(board))}catch{}},2000)};
-const tokOf=()=>crypto.createHmac('sha256',process.env.DEV_KEY||'').update('sweettdev-session-v1').digest('hex');
+// SweettDev password: only a one-way fingerprint is stored here (the password itself is NOT in any file).
+const DEV_SALT='76ed99a495a706ce6237786976bc7fea';
+const tokFrom=pw=>crypto.scryptSync(String(pw).slice(0,100),DEV_SALT,32).toString('hex');
+const sha=t=>crypto.createHash('sha256').update(String(t)).digest('hex');
+const DEV_H='46b2c94e5f9f9043b5eba4c8649741e630390d0369fd4f84fe6c2b2ba5ac14a0';
 const same=(a,b)=>{const x=Buffer.from(String(a)),y=Buffer.from(String(b));return x.length===y.length&&crypto.timingSafeEqual(x,y)};
 const PORT=process.env.PORT||3000,MAX=40;
 const page=()=>fs.readFileSync(path.join(__dirname,'public','index.html'));
@@ -23,11 +27,15 @@ wss.on('connection',ws=>{
   ws.on('message',m=>{
     if(++pl.n>100)return;                      // simple flood limit (reset every second)
     let d;try{d=JSON.parse(m)}catch{return}
-    if(d&&d.t==='dev'){                                      // dev room (needs the DEV_KEY secret)
-      if(d.cmd==='auth'){const k=process.env.DEV_KEY;
-        pl.dev=!!k&&String(d.n||'').trim().toLowerCase()==='sweettdev'&&((!!d.key&&same(d.key,k))||(!!d.tok&&same(d.tok,tokOf())));
+    if(d&&d.t==='dev'){                                      // dev room (SweettDev password login)
+      if(d.cmd==='auth'){let tok=null;
+        if(String(d.n||'').trim().toLowerCase()==='sweettdev'){
+          if(d.key){const t=tokFrom(d.key);if(same(sha(t),DEV_H))tok=t}
+          else if(d.tok&&same(sha(d.tok),DEV_H))tok=String(d.tok);
+        }
+        pl.dev=!!tok;
         if(!pl.dev&&++pl.bad>5){ws.close();return}
-        ws.send(JSON.stringify({t:'dev',ok:pl.dev,tok:pl.dev?tokOf():undefined,msg:k?'':'DEV_KEY is not set on the server'}));return}
+        ws.send(JSON.stringify({t:'dev',ok:pl.dev,tok:tok||undefined}));return}
       if(!pl.dev)return;
       if(d.cmd==='sfx')bc({t:'sfx',on:d.on?1:0});
       else if(d.cmd==='kill'){const m=JSON.stringify({t:'kill',by:id});for(const p of players.values())if(p!==pl&&p.ws.readyState===1)p.ws.send(m)}
